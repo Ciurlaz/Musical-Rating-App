@@ -23,7 +23,7 @@ def init_db():
                   favorite_parts TEXT,
                   lyrics TEXT,
                   user_id INTEGER,
-                  date_added DATE,
+                  songs_date_added DATE,
                   FOREIGN KEY(user_id) REFERENCES users(id)
                 )''')
     c.execute('''CREATE TABLE IF NOT EXISTS albums (
@@ -34,7 +34,7 @@ def init_db():
                   favorite_song TEXT,
                   songs_list TEXT,
                   user_id INTEGER,
-                  date_added DATE,
+                  albums_date_added DATE,
                   FOREIGN KEY(user_id) REFERENCES users(id)
                 )''')
     c.execute('''CREATE TABLE IF NOT EXISTS ratings (
@@ -43,7 +43,7 @@ def init_db():
                   item_id INTEGER,
                   rating REAL,
                   type TEXT,
-                  date_added DATE,
+                  user_date_added DATE,
                   FOREIGN KEY(user_id) REFERENCES users(id)
                 )''')
     conn.commit()
@@ -53,7 +53,7 @@ def init_db():
 def add_song(title, artist, youtube_link, favorite_parts, lyrics, user_id):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    c.execute('INSERT INTO songs (title, artist, youtube_link, favorite_parts, lyrics, user_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    c.execute('INSERT INTO songs (title, artist, youtube_link, favorite_parts, lyrics, user_id, songs_date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
               (title, artist, youtube_link, favorite_parts, lyrics, user_id, datetime.now().date()))
     conn.commit()
     conn.close()
@@ -61,7 +61,7 @@ def add_song(title, artist, youtube_link, favorite_parts, lyrics, user_id):
 def add_album(title, artist, link, favorite_song, songs_list, user_id):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    c.execute('INSERT INTO albums (title, artist, link, favorite_song, songs_list, user_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    c.execute('INSERT INTO albums (title, artist, link, favorite_song, songs_list, user_id, albums_date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
               (title, artist, link, favorite_song, songs_list, user_id, datetime.now().date()))
     conn.commit()
     conn.close()
@@ -71,14 +71,14 @@ def get_songs(date_filter="day"):
     c = conn.cursor()
     today = datetime.now().date()
     if date_filter == "day":
-        c.execute("SELECT * FROM songs WHERE date_added = ?", (today,))
+        c.execute("SELECT * FROM songs WHERE songs_date_added = ?", (today,))
     elif date_filter == "week":
         start_week = today - timedelta(days=today.weekday())
         end_week = start_week + timedelta(days=6)
-        c.execute("SELECT * FROM songs WHERE date_added BETWEEN ? AND ?", (start_week, end_week))
+        c.execute("SELECT * FROM songs WHERE songs_date_added BETWEEN ? AND ?", (start_week, end_week))
     else:
         c.execute("SELECT * FROM songs")
-    songs = [{'id': row[0], 'title': row[1], 'artist': row[2], 'youtube_link': row[3], 'favorite_parts': row[4], 'lyrics': row[5], 'user_id': row[6], 'date_added': row[7]} for row in c.fetchall()]
+    songs = [{'id': row[0], 'title': row[1], 'artist': row[2], 'youtube_link': row[3], 'favorite_parts': row[4], 'lyrics': row[5], 'user_id': row[6], 'songs_date_added': row[7]} for row in c.fetchall()]
     conn.close()
     return songs
 
@@ -87,14 +87,14 @@ def get_albums(date_filter="day"):
     c = conn.cursor()
     today = datetime.now().date()
     if date_filter == "day":
-        c.execute("SELECT * FROM albums WHERE date_added = ?", (today,))
+        c.execute("SELECT * FROM albums WHERE albums_date_added = ?", (today,))
     elif date_filter == "week":
         start_week = today - timedelta(days=today.weekday())
         end_week = start_week + timedelta(days=6)
-        c.execute("SELECT * FROM albums WHERE date_added BETWEEN ? AND ?", (start_week, end_week))
+        c.execute("SELECT * FROM albums WHERE albums_date_added BETWEEN ? AND ?", (start_week, end_week))
     else:
         c.execute("SELECT * FROM albums")
-    albums = [{'id': row[0], 'title': row[1], 'artist': row[2], 'link': row[3], 'favorite_song': row[4], 'songs_list': row[5], 'user_id': row[6], 'date_added': row[7]} for row in c.fetchall()]
+    albums = [{'id': row[0], 'title': row[1], 'artist': row[2], 'link': row[3], 'favorite_song': row[4], 'songs_list': row[5], 'user_id': row[6], 'albums_date_added': row[7]} for row in c.fetchall()]
     conn.close()
     return albums
 
