@@ -1,47 +1,54 @@
+import os
 import sqlite3
 from datetime import datetime, timedelta
 
 def init_db():
+    # Assicurati che la cartella 'data/' esista
+    if not os.path.exists('data'):
+        os.makedirs('data')
+    
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-
+    
     c.execute('''CREATE TABLE IF NOT EXISTS users (
-                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 username TEXT UNIQUE NOT NULL,
-                 password TEXT NOT NULL)''')
-
+                  id INTEGER PRIMARY KEY,
+                  username TEXT,
+                  password TEXT
+                )''')
     c.execute('''CREATE TABLE IF NOT EXISTS songs (
-                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 title TEXT NOT NULL,
-                 artist TEXT NOT NULL,
-                 youtube_link TEXT NOT NULL,
-                 favorite_parts TEXT,
-                 lyrics TEXT,
-                 user_id INTEGER,
-                 date_added DATE NOT NULL,
-                 FOREIGN KEY (user_id) REFERENCES users (id))''')
-
+                  id INTEGER PRIMARY KEY,
+                  title TEXT,
+                  artist TEXT,
+                  youtube_link TEXT,
+                  favorite_parts TEXT,
+                  lyrics TEXT,
+                  user_id INTEGER,
+                  date_added DATE,
+                  FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
     c.execute('''CREATE TABLE IF NOT EXISTS albums (
-                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 title TEXT NOT NULL,
-                 artist TEXT NOT NULL,
-                 link TEXT NOT NULL,
-                 favorite_song TEXT,
-                 songs_list TEXT,
-                 user_id INTEGER,
-                 date_added DATE NOT NULL,
-                 FOREIGN KEY (user_id) REFERENCES users (id))''')
-
+                  id INTEGER PRIMARY KEY,
+                  title TEXT,
+                  artist TEXT,
+                  link TEXT,
+                  favorite_song TEXT,
+                  songs_list TEXT,
+                  user_id INTEGER,
+                  date_added DATE,
+                  FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
     c.execute('''CREATE TABLE IF NOT EXISTS ratings (
-                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                 item_id INTEGER NOT NULL,
-                 item_type TEXT NOT NULL,  -- 'song' or 'album'
-                 rating REAL NOT NULL,
-                 user_id INTEGER,
-                 FOREIGN KEY (user_id) REFERENCES users (id))''')
-
+                  id INTEGER PRIMARY KEY,
+                  user_id INTEGER,
+                  item_id INTEGER,
+                  rating REAL,
+                  type TEXT,
+                  date_added DATE,
+                  FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
     conn.commit()
     conn.close()
+
 
 def add_song(title, artist, youtube_link, favorite_parts, lyrics, user_id):
     conn = sqlite3.connect('data/database.db')
