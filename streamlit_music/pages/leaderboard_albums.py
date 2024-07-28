@@ -14,7 +14,7 @@ def app():
     for album in albums_week:
         st.write(f"{album['title']} by {album['artist']} - Average Rating: {album['avg_rating']:.2f}")
 
-    st.header("All Time Album")
-    albums_all_time = get_ratings("album", "all_time")
+    st.header("All-time Albums")
+    albums_all_time = get_ratings("album", "all-time")
     for album in albums_all_time:
         st.write(f"{album['title']} by {album['artist']} - Average Rating: {album['avg_rating']:.2f}")

@@ -103,7 +103,7 @@ def get_ratings(item_type, date_filter):
         end_week = start_week + timedelta(days=6)
         query = f"SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating FROM {item_type}s INNER JOIN ratings ON {item_type}s.id = ratings.item_id WHERE date_added BETWEEN ? AND ? AND item_type = ? GROUP BY {item_type}s.title, {item_type}s.artist"
         c.execute(query, (start_week, end_week, item_type))
-    else:
+    else:  # all-time
         query = f"SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating FROM {item_type}s INNER JOIN ratings ON {item_type}s.id = ratings.item_id WHERE item_type = ? GROUP BY {item_type}s.title, {item_type}s.artist"
         c.execute(query, (item_type,))
     results = [{'title': row[0], 'artist': row[1], 'avg_rating': row[2]} for row in c.fetchall()]

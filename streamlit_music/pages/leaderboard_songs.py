@@ -13,8 +13,8 @@ def app():
     songs_week = get_ratings("song", "week")
     for song in songs_week:
         st.write(f"{song['title']} by {song['artist']} - Average Rating: {song['avg_rating']:.2f}")
-    
-    st.header("All Time Song")
-    songs_all_time = get_ratings("song", "all_time")
+
+    st.header("All-time Songs")
+    songs_all_time = get_ratings("song", "all-time")
     for song in songs_all_time:
         st.write(f"{song['title']} by {song['artist']} - Average Rating: {song['avg_rating']:.2f}")
