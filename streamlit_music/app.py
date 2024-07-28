@@ -16,13 +16,13 @@ if not st.session_state.authenticated:
     if login_option == "Login":
         if login.app():
             st.session_state.authenticated = True
-            st.experimental_rerun()
+            st.rerun()
     else:
         signup.app()
 else:
     if st.sidebar.button("Logout"):
         st.session_state.authenticated = False
-        st.experimental_rerun()
+        st.rerun()
 
     st.sidebar.title("Music Rating App")
     app.add_app("Home", home.app)
