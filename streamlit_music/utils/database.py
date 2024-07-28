@@ -2,7 +2,7 @@ import sqlite3
 from datetime import datetime, timedelta
 
 def init_db():
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
 
     c.execute('''CREATE TABLE IF NOT EXISTS users (
@@ -44,7 +44,7 @@ def init_db():
     conn.close()
 
 def add_song(title, artist, youtube_link, favorite_parts, lyrics, user_id):
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     c.execute('INSERT INTO songs (title, artist, youtube_link, favorite_parts, lyrics, user_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
               (title, artist, youtube_link, favorite_parts, lyrics, user_id, datetime.now().date()))
@@ -52,7 +52,7 @@ def add_song(title, artist, youtube_link, favorite_parts, lyrics, user_id):
     conn.close()
 
 def add_album(title, artist, link, favorite_song, songs_list, user_id):
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     c.execute('INSERT INTO albums (title, artist, link, favorite_song, songs_list, user_id, date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
               (title, artist, link, favorite_song, songs_list, user_id, datetime.now().date()))
@@ -60,7 +60,7 @@ def add_album(title, artist, link, favorite_song, songs_list, user_id):
     conn.close()
 
 def get_songs(date_filter="day"):
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     today = datetime.now().date()
     if date_filter == "day":
@@ -76,7 +76,7 @@ def get_songs(date_filter="day"):
     return songs
 
 def get_albums(date_filter="day"):
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     today = datetime.now().date()
     if date_filter == "day":
@@ -92,7 +92,7 @@ def get_albums(date_filter="day"):
     return albums
 
 def get_ratings(item_type, date_filter):
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     today = datetime.now().date()
     if date_filter == "day":
@@ -111,7 +111,7 @@ def get_ratings(item_type, date_filter):
     return results
 
 def add_rating(item_id, item_type, rating, user_id):
-    conn = sqlite3.connect('../data/database.db')
+    conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     c.execute('INSERT INTO ratings (item_id, item_type, rating, user_id) VALUES (?, ?, ?, ?)',
               (item_id, item_type, rating, user_id))
