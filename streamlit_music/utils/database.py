@@ -103,11 +103,13 @@ def get_ratings(item_type, date_filter):
     c = conn.cursor()
     today = datetime.now().date()
 
+    # Determina il nome della colonna in base al tipo di elemento
     if item_type == "song":
         date_column = "songs_date_added"
     elif item_type == "album":
         date_column = "albums_date_added"
 
+    # Crea la query in base al filtro della data
     if date_filter == "day":
         query = f"""
             SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
