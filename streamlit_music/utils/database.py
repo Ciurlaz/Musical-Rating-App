@@ -103,12 +103,17 @@ def get_ratings(item_type, date_filter):
     c = conn.cursor()
     today = datetime.now().date()
 
+    if item_type == "song":
+        date_column = "songs_date_added"
+    elif item_type == "album":
+        date_column = "albums_date_added"
+
     if date_filter == "day":
         query = f"""
             SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
             FROM {item_type}s 
             INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE {item_type}s.date_added = ? AND ratings.type = ? 
+            WHERE {item_type}s.{date_column} = ? AND ratings.type = ? 
             GROUP BY {item_type}s.title, {item_type}s.artist
         """
         c.execute(query, (today, item_type))
@@ -119,7 +124,7 @@ def get_ratings(item_type, date_filter):
             SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
             FROM {item_type}s 
             INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE {item_type}s.date_added BETWEEN ? AND ? AND ratings.type = ? 
+            WHERE {item_type}s.{date_column} BETWEEN ? AND ? AND ratings.type = ? 
             GROUP BY {item_type}s.title, {item_type}s.artist
         """
         c.execute(query, (start_week, end_week, item_type))
@@ -136,8 +141,6 @@ def get_ratings(item_type, date_filter):
     results = [{'title': row[0], 'artist': row[1], 'avg_rating': row[2]} for row in c.fetchall()]
     conn.close()
     return results
-
-
 
 def add_rating(item_id, item_type, rating, user_id):
     conn = sqlite3.connect('data/database.db')
