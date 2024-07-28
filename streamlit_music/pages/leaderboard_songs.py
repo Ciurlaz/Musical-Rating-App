@@ -2,19 +2,19 @@ import streamlit as st
 from utils.database import get_ratings
 
 def app():
-    st.title("Songs Leaderboard")
+    st.title("Albums Leaderboard")
 
-    st.header("Song of the Day")
-    songs_day = get_ratings("song", "day")
-    for song in songs_day:
-        st.write(f"{song['title']} by {song['artist']} - Average Rating: {song['avg_rating']:.2f}")
+    st.header("Album of the Day")
+    albums_day = get_ratings("album", "day")
+    for album in albums_day:
+        st.write(f"{album['title']} by {album['artist']} - Average Rating: {album['avg_rating']:.2f}")
 
-    st.header("Song of the Week")
-    songs_week = get_ratings("song", "week")
-    for song in songs_week:
-        st.write(f"{song['title']} by {song['artist']} - Average Rating: {song['avg_rating']:.2f}")
+    st.header("Album of the Week")
+    albums_week = get_ratings("album", "week")
+    for album in albums_week:
+        st.write(f"{album['title']} by {album['artist']} - Average Rating: {album['avg_rating']:.2f}")
 
-    st.header("All-time Songs")
-    songs_all_time = get_ratings("song", "all-time")
-    for song in songs_all_time:
-        st.write(f"{song['title']} by {song['artist']} - Average Rating: {song['avg_rating']:.2f}")
+    st.header("All-time Albums")
+    albums_all_time = get_ratings("album", "all-time")
+    for album in albums_all_time:
+        st.write(f"{album['title']} by {album['artist']} - Average Rating: {album['avg_rating']:.2f}")
