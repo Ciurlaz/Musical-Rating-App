@@ -21,15 +21,24 @@ def app():
     favorite_parts = st.text_input("Favorite Parts (optional)")
     lyrics = st.text_area("Lyrics (optional)")
 
+    already = False
+    all_time_songs = get_songs("all-time")
+    for song in all_time_songs:
+        if song["title"] == title and song["artist"] == artist:
+            already = True
+    
     if st.button("Add Song"):
         if added:
             st.error("You already added a song today.")
         else:
-            if title and artist and youtube_link:
-                add_song(title, artist, youtube_link, favorite_parts, lyrics, st.session_state.user_id)
-                st.success("Song added successfully.")
+            if already:
+                st.error("Song already exists in the database. Try with another one.")
             else:
-                st.error("Please fill in the required fields.")
+                if title and artist and youtube_link:
+                    add_song(title, artist, youtube_link, favorite_parts, lyrics, st.session_state.user_id)
+                    st.success("Song added successfully.")
+                else:
+                    st.error("Please fill in the required fields.")
 
     st.header("Songs of the Day")
     if not today_songs:

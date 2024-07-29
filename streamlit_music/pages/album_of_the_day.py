@@ -21,15 +21,24 @@ def app():
     favorite_song = st.text_input("Favorite Song (optional)")
     songs_list = st.text_area("Songs List (optional)")
 
+    already = False
+    all_time_albums = get_albums("all-time")
+    for album in all_time_albums:
+        if album["title"] == title and album["artist"] == artist:
+            already = True
+
     if st.button("Add Album"):
         if added:
             st.error("You already added an album today.")
         else:
-            if title and artist and link:
-                add_album(title, artist, link, favorite_song, songs_list, st.session_state.user_id)
-                st.success("Album added successfully.")
+            if already:
+                st.error("An album with the same name and artist already exists.")
             else:
-                st.error("Please fill in the required fields.")
+                if title and artist and link:
+                    add_album(title, artist, link, favorite_song, songs_list, st.session_state.user_id)
+                    st.success("Album added successfully.")
+                else:
+                    st.error("Please fill in the required fields.")
 
     st.header("Albums of the Day")
     if not today_albums:
