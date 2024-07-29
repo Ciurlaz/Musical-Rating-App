@@ -101,48 +101,32 @@ def get_albums(date_filter="day"):
 def get_ratings(item_type, date_filter):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    today = datetime.now().date()
-
-    # Determina il nome della colonna in base al tipo di elemento
-    if item_type == "song":
-        date_column = "songs_date_added"
-    elif item_type == "album":
-        date_column = "albums_date_added"
-
-    # Crea la query in base al filtro della data
-    if date_filter == "day":
-        query = f"""
-            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
-            FROM {item_type}s 
-            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE {item_type}s.{date_column} = ? AND ratings.type = ? 
-            GROUP BY {item_type}s.title, {item_type}s.artist
-        """
-        c.execute(query, (today, item_type))
-    elif date_filter == "week":
-        start_week = today - timedelta(days=today.weekday())
-        end_week = start_week + timedelta(days=6)
-        query = f"""
-            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
-            FROM {item_type}s 
-            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE {item_type}s.{date_column} BETWEEN ? AND ? AND ratings.type = ? 
-            GROUP BY {item_type}s.title, {item_type}s.artist
-        """
-        c.execute(query, (start_week, end_week, item_type))
-    else:  # all-time
-        query = f"""
-            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
-            FROM {item_type}s 
-            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE ratings.type = ? 
-            GROUP BY {item_type}s.title, {item_type}s.artist
-        """
-        c.execute(query, (item_type,))
     
-    results = [{'title': row[0], 'artist': row[1], 'avg_rating': row[2]} for row in c.fetchall()]
+    if item_type == "song":
+        query = """
+        SELECT s.id, s.title, s.artist, AVG(r.rating) AS average_rating
+        FROM songs s
+        JOIN ratings r ON s.id = r.song_id
+        WHERE r.added_on BETWEEN ? AND ?  -- Usa il nome corretto della colonna
+        GROUP BY s.id
+        """
+    elif item_type == "album":
+        query = """
+        SELECT a.id, a.title, a.artist, AVG(r.rating) AS average_rating
+        FROM albums a
+        JOIN ratings r ON a.id = r.album_id
+        WHERE r.added_on BETWEEN ? AND ?  -- Usa il nome corretto della colonna
+        GROUP BY a.id
+        """
+    else:
+        return []
+    
+    c.execute(query, (date_filter, date_filter))
+    rows = c.fetchall()
     conn.close()
-    return results
+    
+    return [{'id': row[0], 'title': row[1], 'artist': row[2], 'average_rating': row[3]} for row in rows]
+
 
 def add_rating(item_id, item_type, rating, user_id):
     conn = sqlite3.connect('data/database.db')
