@@ -1,5 +1,4 @@
 # app.py
-
 import streamlit as st
 from multiapp import MultiApp
 from pages import home, song_of_the_day, album_of_the_day, leaderboard_songs, leaderboard_albums, login, signup
