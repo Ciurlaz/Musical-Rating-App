@@ -1,9 +1,10 @@
 # utils/database.py
-
 import sqlite3
+import os
 
 def init_db():
-    conn = sqlite3.connect('music_rating_app.db')
+    db_path = os.path.join(os.path.dirname(__file__), '../data/music_rating_app.db')
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
 
     # Create tables
@@ -20,7 +21,8 @@ def init_db():
     conn.close()
 
 def record_vote(item_type, item_name):
-    conn = sqlite3.connect('music_rating_app.db')
+    db_path = os.path.join(os.path.dirname(__file__), '../data/music_rating_app.db')
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
 
     c.execute('''
@@ -34,7 +36,8 @@ def record_vote(item_type, item_name):
     conn.close()
 
 def get_winner(item_type):
-    conn = sqlite3.connect('music_rating_app.db')
+    db_path = os.path.join(os.path.dirname(__file__), '../data/music_rating_app.db')
+    conn = sqlite3.connect(db_path)
     c = conn.cursor()
 
     c.execute('''
