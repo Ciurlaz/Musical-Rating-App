@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.database import add_song, get_songs
+from utils.database import add_song, get_songs, add_rating, get_ratings
 
 def app():
     st.title("Song of the Day")
@@ -40,10 +40,12 @@ def app():
                 else:
                     st.error("Please fill in the required fields.")
 
+    daily_ratings = get_ratings("song", "day")
     st.header("Songs of the Day")
     if not today_songs:
         st.write("No songs added today.")
     else:
+        i = 0
         for song in today_songs:
             st.write("---")
             st.write(f"{song['title']} by {song['artist']} - [Link]({song['youtube_link']})")
@@ -52,3 +54,30 @@ def app():
             if song['lyrics']:
                 st.write(f"**Lyrics:** {song['lyrics']}")
             st.write(f"Song added by **{song["user_id"]}**")
+
+            st.write(f"Rate the song: **{song['title']}**")
+            rating = st.slider(
+                "Select a rating",
+                key=song['id'],
+                min_value=0.0,
+                max_value=10.0,
+                step=0.1
+            )
+
+            st.write(f"Selected rating: {rating:.1f}")
+
+            if st.button("Submit Rating", key=f"{song['id']}+s"):
+                if song['user_id'] == st.session_state.user_id:
+                    st.error("You cannot rate your own song.")
+                else:
+                    if daily_ratings:
+                        for rating in daily_ratings:
+                            if int(rating['item_id']) == song['id'] and rating['user_id'] == st.session_state.user_id:
+                                st.error("You have already rated this song.")
+                            else:
+                                add_rating(song['id'], 'song', rating, st.session_state.user_id)
+                                st.write(f"Rating of {rating:.1f} submitted for {song['title']}!")
+                    else:
+                        add_rating(song['id'], 'song', rating, st.session_state.user_id)
+                        st.write(f"Rating of {rating:.1f} submitted for {song['title']}!")
+            i += 1

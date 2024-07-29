@@ -112,42 +112,39 @@ def get_ratings(item_type, date_filter):
     # Crea la query in base al filtro della data
     if date_filter == "day":
         query = f"""
-            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
-            FROM {item_type}s 
-            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE {item_type}s.{date_column} = ? AND ratings.type = ? 
-            GROUP BY {item_type}s.title, {item_type}s.artist
+            SELECT ratings.item_id, ratings.rating, ratings.user_id
+            FROM {item_type}s
+            INNER JOIN ratings ON {item_type}s.id = ratings.item_id
+            WHERE {item_type}s.{date_column} = ? AND ratings.type = ?
         """
         c.execute(query, (today, item_type))
     elif date_filter == "week":
         start_week = today - timedelta(days=today.weekday())
         end_week = start_week + timedelta(days=6)
         query = f"""
-            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
-            FROM {item_type}s 
-            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE {item_type}s.{date_column} BETWEEN ? AND ? AND ratings.type = ? 
-            GROUP BY {item_type}s.title, {item_type}s.artist
+            SELECT ratings.item_id, ratings.rating, ratings.user_id
+            FROM {item_type}s
+            INNER JOIN ratings ON {item_type}s.id = ratings.item_id
+            WHERE {item_type}s.{date_column} BETWEEN ? AND ? AND ratings.type = ?
         """
         c.execute(query, (start_week, end_week, item_type))
     else:  # all-time
         query = f"""
-            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
-            FROM {item_type}s 
-            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
-            WHERE ratings.type = ? 
-            GROUP BY {item_type}s.title, {item_type}s.artist
+            SELECT ratings.item_id, ratings.rating, ratings.user_id
+            FROM {item_type}s
+            INNER JOIN ratings ON {item_type}s.id = ratings.item_id
+            WHERE ratings.type = ?
         """
         c.execute(query, (item_type,))
     
-    results = [{'title': row[0], 'artist': row[1], 'avg_rating': row[2]} for row in c.fetchall()]
+    results = [{'item_id': row[0], 'rating': row[1], 'user_id': row[2]} for row in c.fetchall()]
     conn.close()
     return results
 
 def add_rating(item_id, item_type, rating, user_id):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    c.execute('INSERT INTO ratings (item_id, item_type, rating, user_id) VALUES (?, ?, ?, ?)',
+    c.execute('INSERT INTO ratings (item_id, type, rating, user_id) VALUES (?, ?, ?, ?)',
               (item_id, item_type, rating, user_id))
     conn.commit()
     conn.close()

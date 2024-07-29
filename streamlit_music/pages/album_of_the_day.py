@@ -52,4 +52,19 @@ def app():
             if album['songs_list']:
                 st.write(f"**Songs List:** {album['songs_list']}")
             st.write(f"Album added by: **{album['user_id']}**")
+
+            st.write(f"Rate the album: **{album['title']}**")
+            rating = st.slider(
+                "Select a rating",
+                key=album['id'],
+                min_value=0.0,
+                max_value=10.0,
+                step=0.1
+            )
+
+            st.write(f"Selected rating: {rating:.1f}")
+
+            if st.button("Submit Rating", key=album['id']):
+                # Qui dovresti aggiungere la logica per gestire l'invio della valutazione
+                st.write(f"Rating of {rating:.1f} submitted for {album['title']}!")
             
