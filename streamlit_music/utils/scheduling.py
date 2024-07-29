@@ -24,4 +24,3 @@ def schedule_winner_announcement():
             time.sleep(1)
 
     threading.Thread(target=run_schedule).start()
-
