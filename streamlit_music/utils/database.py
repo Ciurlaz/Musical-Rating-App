@@ -128,6 +128,7 @@ def get_ratings(item_type, date_filter):
     return [{'id': row[0], 'title': row[1], 'artist': row[2], 'average_rating': row[3]} for row in rows]
 
 
+
 def add_rating(item_id, item_type, rating, user_id):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
