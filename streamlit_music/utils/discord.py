@@ -1,7 +1,7 @@
 # utils/discord.py
 import requests
 
-WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL'
+WEBHOOK_URL = 'https://discord.com/api/webhooks/1267564483124133931/NXJYjiFPSjWprQTyTtnYOliJQcQKTxmw5GFwOpYfyELstPFsOvpJ2FrD9bIid-kdRjR0'
 
 def post_to_discord(message):
     data = {
