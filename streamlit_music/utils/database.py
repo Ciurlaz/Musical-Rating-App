@@ -1,148 +1,153 @@
+import os
 import sqlite3
+from datetime import datetime, timedelta
 
-# Funzione per creare le tabelle nel database (se non esistono già)
-def create_tables():
+def init_db():
+    # Assicurati che la cartella 'data/' esista
+    if not os.path.exists('data'):
+        os.makedirs('data')
+    
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
     
-    # Creazione delle tabelle se non esistono già
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL
-        )
-    ''')
-
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS songs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            artist TEXT NOT NULL,
-            date_added TEXT NOT NULL,
-            uploaded_by INTEGER,
-            FOREIGN KEY(uploaded_by) REFERENCES users(id)
-        )
-    ''')
-
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS albums (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            artist TEXT NOT NULL,
-            date_added TEXT NOT NULL,
-            uploaded_by INTEGER,
-            FOREIGN KEY(uploaded_by) REFERENCES users(id)
-        )
-    ''')
-
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS ratings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            item_id INTEGER NOT NULL,
-            user_id INTEGER NOT NULL,
-            rating INTEGER NOT NULL,
-            FOREIGN KEY(item_id) REFERENCES songs(id),
-            FOREIGN KEY(item_id) REFERENCES albums(id),
-            FOREIGN KEY(user_id) REFERENCES users(id)
-        )
-    ''')
-
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+                  id INTEGER PRIMARY KEY,
+                  username TEXT,
+                  password TEXT
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS songs (
+                  id INTEGER PRIMARY KEY,
+                  title TEXT,
+                  artist TEXT,
+                  youtube_link TEXT,
+                  favorite_parts TEXT,
+                  lyrics TEXT,
+                  user_id INTEGER,
+                  songs_date_added DATE,
+                  FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS albums (
+                  id INTEGER PRIMARY KEY,
+                  title TEXT,
+                  artist TEXT,
+                  link TEXT,
+                  favorite_song TEXT,
+                  songs_list TEXT,
+                  user_id INTEGER,
+                  albums_date_added DATE,
+                  FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
+    c.execute('''CREATE TABLE IF NOT EXISTS ratings (
+                  id INTEGER PRIMARY KEY,
+                  user_id INTEGER,
+                  item_id INTEGER,
+                  rating REAL,
+                  type TEXT,
+                  user_date_added DATE,
+                  FOREIGN KEY(user_id) REFERENCES users(id)
+                )''')
     conn.commit()
     conn.close()
 
-# Funzione per ottenere le canzoni e le informazioni dell'utente che le ha caricate
+
+def add_song(title, artist, youtube_link, favorite_parts, lyrics, user_id):
+    conn = sqlite3.connect('data/database.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO songs (title, artist, youtube_link, favorite_parts, lyrics, user_id, songs_date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
+              (title, artist, youtube_link, favorite_parts, lyrics, user_id, datetime.now().date()))
+    conn.commit()
+    conn.close()
+
+def add_album(title, artist, link, favorite_song, songs_list, user_id):
+    conn = sqlite3.connect('data/database.db')
+    c = conn.cursor()
+    c.execute('INSERT INTO albums (title, artist, link, favorite_song, songs_list, user_id, albums_date_added) VALUES (?, ?, ?, ?, ?, ?, ?)',
+              (title, artist, link, favorite_song, songs_list, user_id, datetime.now().date()))
+    conn.commit()
+    conn.close()
+
+def get_songs(date_filter="day"):
+    conn = sqlite3.connect('data/database.db')
+    c = conn.cursor()
+    today = datetime.now().date()
+    if date_filter == "day":
+        c.execute("SELECT * FROM songs WHERE songs_date_added = ?", (today,))
+    elif date_filter == "week":
+        start_week = today - timedelta(days=today.weekday())
+        end_week = start_week + timedelta(days=6)
+        c.execute("SELECT * FROM songs WHERE songs_date_added BETWEEN ? AND ?", (start_week, end_week))
+    else:
+        c.execute("SELECT * FROM songs")
+    songs = [{'id': row[0], 'title': row[1], 'artist': row[2], 'youtube_link': row[3], 'favorite_parts': row[4], 'lyrics': row[5], 'user_id': row[6], 'songs_date_added': row[7]} for row in c.fetchall()]
+    conn.close()
+    return songs
+
+def get_albums(date_filter="day"):
+    conn = sqlite3.connect('data/database.db')
+    c = conn.cursor()
+    today = datetime.now().date()
+    if date_filter == "day":
+        c.execute("SELECT * FROM albums WHERE albums_date_added = ?", (today,))
+    elif date_filter == "week":
+        start_week = today - timedelta(days=today.weekday())
+        end_week = start_week + timedelta(days=6)
+        c.execute("SELECT * FROM albums WHERE albums_date_added BETWEEN ? AND ?", (start_week, end_week))
+    else:
+        c.execute("SELECT * FROM albums")
+    albums = [{'id': row[0], 'title': row[1], 'artist': row[2], 'link': row[3], 'favorite_song': row[4], 'songs_list': row[5], 'user_id': row[6], 'albums_date_added': row[7]} for row in c.fetchall()]
+    conn.close()
+    return albums
+
 def get_ratings(item_type, date_filter):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    
-    if item_type == 'song':
-        c.execute('''
-            SELECT s.id, s.title, s.artist, s.date_added, u.username AS uploader
-            FROM songs AS s
-            JOIN users AS u ON s.uploaded_by = u.id
-            WHERE s.date_added BETWEEN ? AND ?
-        ''', date_filter)
-    elif item_type == 'album':
-        c.execute('''
-            SELECT a.id, a.title, a.artist, a.date_added, u.username AS uploader
-            FROM albums AS a
-            JOIN users AS u ON a.uploaded_by = u.id
-            WHERE a.date_added BETWEEN ? AND ?
-        ''', date_filter)
-    
-    rows = c.fetchall()
-    conn.close()
-    
-    return rows
+    today = datetime.now().date()
 
-# Funzione per registrare un voto
-def vote_for_item(item_id, user_id, rating):
+    # Determina il nome della colonna in base al tipo di elemento
+    if item_type == "song":
+        date_column = "songs_date_added"
+    elif item_type == "album":
+        date_column = "albums_date_added"
+
+    # Crea la query in base al filtro della data
+    if date_filter == "day":
+        query = f"""
+            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
+            FROM {item_type}s 
+            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
+            WHERE {item_type}s.{date_column} = ? AND ratings.type = ? 
+            GROUP BY {item_type}s.title, {item_type}s.artist
+        """
+        c.execute(query, (today, item_type))
+    elif date_filter == "week":
+        start_week = today - timedelta(days=today.weekday())
+        end_week = start_week + timedelta(days=6)
+        query = f"""
+            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
+            FROM {item_type}s 
+            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
+            WHERE {item_type}s.{date_column} BETWEEN ? AND ? AND ratings.type = ? 
+            GROUP BY {item_type}s.title, {item_type}s.artist
+        """
+        c.execute(query, (start_week, end_week, item_type))
+    else:  # all-time
+        query = f"""
+            SELECT {item_type}s.title, {item_type}s.artist, AVG(rating) as avg_rating 
+            FROM {item_type}s 
+            INNER JOIN ratings ON {item_type}s.id = ratings.item_id 
+            WHERE ratings.type = ? 
+            GROUP BY {item_type}s.title, {item_type}s.artist
+        """
+        c.execute(query, (item_type,))
+    
+    results = [{'title': row[0], 'artist': row[1], 'avg_rating': row[2]} for row in c.fetchall()]
+    conn.close()
+    return results
+
+def add_rating(item_id, item_type, rating, user_id):
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    c.execute('''
-        INSERT INTO ratings (item_id, user_id, rating)
-        VALUES (?, ?, ?)
-    ''', (item_id, user_id, rating))
+    c.execute('INSERT INTO ratings (item_id, item_type, rating, user_id) VALUES (?, ?, ?, ?)',
+              (item_id, item_type, rating, user_id))
     conn.commit()
     conn.close()
-
-# Funzione per ottenere i dettagli di una canzone
-def get_song_details(song_id):
-    conn = sqlite3.connect('data/database.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT id, title, artist, date_added
-        FROM songs
-        WHERE id = ?
-    ''', (song_id,))
-    song = c.fetchone()
-    conn.close()
-    return song
-
-# Funzione per ottenere i voti di una canzone
-def get_song_votes(song_id):
-    conn = sqlite3.connect('data/database.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT r.rating, u.username AS voter
-        FROM ratings AS r
-        JOIN users AS u ON r.user_id = u.id
-        WHERE r.item_id = ? AND r.item_id IN (SELECT id FROM songs)
-    ''', (song_id,))
-    
-    rows = c.fetchall()
-    conn.close()
-    
-    return rows
-
-# Funzione per ottenere i dettagli di un album
-def get_album_details(album_id):
-    conn = sqlite3.connect('data/database.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT id, title, artist, date_added
-        FROM albums
-        WHERE id = ?
-    ''', (album_id,))
-    album = c.fetchone()
-    conn.close()
-    return album
-
-# Funzione per ottenere i voti di un album
-def get_album_votes(album_id):
-    conn = sqlite3.connect('data/database.db')
-    c = conn.cursor()
-    c.execute('''
-        SELECT r.rating, u.username AS voter
-        FROM ratings AS r
-        JOIN users AS u ON r.user_id = u.id
-        WHERE r.item_id = ? AND r.item_id IN (SELECT id FROM albums)
-    ''', (album_id,))
-    
-    rows = c.fetchall()
-    conn.close()
-    
-    return rows
-
-# Esegui la creazione delle tabelle
-create_tables()
