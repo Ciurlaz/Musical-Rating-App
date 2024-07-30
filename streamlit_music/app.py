@@ -1,11 +1,9 @@
-# app.py
 import streamlit as st
 from multiapp import MultiApp
 from pages import home, song_of_the_day, album_of_the_day, leaderboard_songs, leaderboard_albums, login, signup
 from utils.database import init_db
-from utils.scheduling import schedule_winner_announcement
 
-# Initialize the database
+# Inizializzazione del database
 init_db()
 
 app = MultiApp()
@@ -34,6 +32,3 @@ else:
     app.add_app("Albums Leaderboard", leaderboard_albums.app)
 
     app.run()
-
-# Schedule the announcement of winners
-schedule_winner_announcement()

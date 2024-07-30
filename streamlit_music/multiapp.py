@@ -1,4 +1,3 @@
-# multiapp.py
 import streamlit as st
 
 class MultiApp:
