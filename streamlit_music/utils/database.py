@@ -39,6 +39,7 @@ def init_db():
                 )''')
     c.execute('''CREATE TABLE IF NOT EXISTS ratings (
                   id INTEGER PRIMARY KEY,
+                  title TEXT,
                   user_id INTEGER,
                   item_id INTEGER,
                   rating REAL,
@@ -112,7 +113,7 @@ def get_ratings(item_type, date_filter):
     # Crea la query in base al filtro della data
     if date_filter == "day":
         query = f"""
-            SELECT ratings.item_id, ratings.rating, ratings.user_id
+            SELECT ratings.item_id, ratings.rating, ratings.user_id, ratings.title
             FROM {item_type}s
             INNER JOIN ratings ON {item_type}s.id = ratings.item_id
             WHERE {item_type}s.{date_column} = ? AND ratings.type = ?
@@ -122,7 +123,7 @@ def get_ratings(item_type, date_filter):
         start_week = today - timedelta(days=today.weekday())
         end_week = start_week + timedelta(days=6)
         query = f"""
-            SELECT ratings.item_id, ratings.rating, ratings.user_id
+            SELECT ratings.item_id, ratings.rating, ratings.user_id, ratings.title
             FROM {item_type}s
             INNER JOIN ratings ON {item_type}s.id = ratings.item_id
             WHERE {item_type}s.{date_column} BETWEEN ? AND ? AND ratings.type = ?
@@ -130,24 +131,23 @@ def get_ratings(item_type, date_filter):
         c.execute(query, (start_week, end_week, item_type))
     else:  # all-time
         query = f"""
-            SELECT ratings.item_id, ratings.rating, ratings.user_id
+            SELECT ratings.item_id, ratings.rating, ratings.user_id, ratings.title
             FROM {item_type}s
             INNER JOIN ratings ON {item_type}s.id = ratings.item_id
             WHERE ratings.type = ?
         """
         c.execute(query, (item_type,))
-    
-    results = [{'item_id': row[0], 'rating': row[1], 'user_id': row[2]} for row in c.fetchall()]
+    results = [{'item_id': row[0], 'rating': row[1], 'user_id': row[2], 'title': row[3]} for row in c.fetchall()]
     conn.close()
     return results
 
-def add_rating(item_id, item_type, rating, user_id):
+def add_rating(item_id, item_type, rating, user_id, title):
     if not isinstance(rating, (int, float)):
         print(rating)
         raise ValueError("rating deve essere un valore numerico")
     conn = sqlite3.connect('data/database.db')
     c = conn.cursor()
-    c.execute('INSERT INTO ratings (item_id, type, rating, user_id) VALUES (?, ?, ?, ?)',
-              (item_id, item_type, rating, user_id))
+    c.execute('INSERT INTO ratings (item_id, type, rating, user_id, title) VALUES (?, ?, ?, ?, ?)',
+              (item_id, item_type, rating, user_id, title))
     conn.commit()
     conn.close()

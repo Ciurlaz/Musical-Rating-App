@@ -84,9 +84,9 @@ def app():
                         if song['id'] in i_ids and st.session_state.user_id in u_ids:
                             st.error("You have already rated this song.")
                         else:
-                            add_rating(song['id'], 'song', rating, st.session_state.user_id)
+                            add_rating(song['id'], 'song', rating, st.session_state.user_id, song['title'])
                             st.write(f"Rating of {rating:.1f} submitted for {song['title']}!")
                     else:
-                        add_rating(song['id'], 'song', rating, st.session_state.user_id)
+                        add_rating(song['id'], 'song', rating, st.session_state.user_id, song['title'])
                         st.write(f"Rating of {rating:.1f} submitted for {song['title']}!")
             i += 1

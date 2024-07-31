@@ -34,7 +34,7 @@ def app():
             if already:
                 st.error("An album with the same name and artist already exists.")
             else:
-                if title and artist and link:
+                if title and artist:
                     add_album(title, artist, link, favorite_song, songs_list, st.session_state.user_id)
                     st.success("Album added successfully.")
                 else:
@@ -56,7 +56,7 @@ def app():
             if album['songs_list']:
                 st.write("**List of songs:**")
                 st.write(f"{album['songs_list']}")
-            st.write(f"Album added by **{album["user_id"]}**")
+            st.write(f"Album added by **{album['user_id']}**")
 
             st.write(f"Rate the album: **{album['title']}**")
             rating = st.slider(
@@ -71,20 +71,10 @@ def app():
                 if album['user_id'] == st.session_state.user_id:
                     st.error("You cannot rate your own album.")
                 else:
-                    if daily_ratings:
-                        i_ids = []
-                        u_ids = []
-                        for rated in daily_ratings:
-                            i_id = rated['item_id']
-                            u_id = rated['user_id']
-                            i_ids.append(i_id)
-                            u_ids.append(u_id)
-                        if album['id'] in i_ids and st.session_state.user_id in u_ids:
-                            st.error("You have already rated this album.")
-                        else:
-                            add_rating(album['id'], 'album', rating, st.session_state.user_id)
-                            st.write(f"Rating of {rating:.1f} submitted for {album['title']}!")
-                                
+                    # Verifica se l'utente ha già valutato questo album
+                    has_rated = any(rated['item_id'] == album['id'] and rated['user_id'] == st.session_state.user_id for rated in daily_ratings)
+                    if has_rated:
+                        st.error("You have already rated this album.")
                     else:
-                        add_rating(album['id'], 'album', rating, st.session_state.user_id)
-                        st.write(f"Rating of {rating:.1f} submitted for {album['title']}!")
+                        add_rating(album['id'], 'album', rating, st.session_state.user_id, album['title'])
+                        st.success(f"Rating of {rating:.1f} submitted for {album['title']}!")
