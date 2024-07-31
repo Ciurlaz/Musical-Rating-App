@@ -57,7 +57,7 @@ def app():
             if song['lyrics']:
                 st.write("**Lyrics:**")
                 st.write(f"{song['lyrics']}")
-            st.write(f"Song added by **{song["user_id"]}**")
+            st.write(f"Song added by **{song['user_id']}**")
 
             st.write(f"Rate the song: **{song['title']}**")
             rating = float(st.slider(
